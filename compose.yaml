@@ -1,0 +1,17 @@
+services:
+  ollama:
+    image: ollama/ollama:0.3.12
+    container_name: ollama_server
+    restart: always
+    ports:
+      - "11435:11434"
+    volumes:
+      - ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: [gpu]
+
+volumes:
+  ollama:
