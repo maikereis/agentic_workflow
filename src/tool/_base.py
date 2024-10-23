@@ -1,3 +1,4 @@
+import re
 import json
 import inspect
 from inspect import signature
@@ -222,6 +223,9 @@ class Tool(Function):
         }
         return schema
 
+    def __str__(self):
+        return f"Tool(name='{self.name}')"
+
     def __repr__(self):
         """
         Returns a string representation of the Tool object.
@@ -344,6 +348,21 @@ class ToolKit(BaseModel):
         """
         return self._tools.get(name)
 
+    def __str__(self):
+        """
+        Returns a string representation of the ToolKit object.
+
+        Returns
+        -------
+        str
+            A representation including the number of tools and a preview of their names.
+        """
+        tool_names = list(self._tools.keys())
+        tool_preview = ', '.join(tool_names[:3])  # Show up to the first 3 tool names
+        if len(tool_names) > 3:
+            tool_preview += ', ...'  # Indicate there are more tools if the list is long
+        return f"ToolKit(tools=[{tool_preview}])"
+
     def __repr__(self):
         """
         Returns a string representation of the ToolKit object.
@@ -358,3 +377,43 @@ class ToolKit(BaseModel):
         if len(tool_names) > 3:
             tool_preview += ', ...'  # Indicate there are more tools if the list is long
         return f"ToolKit(num_tools={len(tool_names)}, tools=[{tool_preview}])"
+
+
+class ToolCall(BaseModel):
+    name: str
+    arguments: dict
+    id: int
+
+class ToolCallProcessor:
+    def __init__(self, message: str):
+        self.message = message
+        self.call_json = self.parse_multiple_tool_calls(self.message)
+        self.tool_calls = [ToolCall(**call) for call in self.call_json]
+
+    def parse_multiple_tool_calls(self, content: str):
+        """
+        Parse multiple <tool_call> entries from a string and return a list of corresponding dictionaries.
+
+        Parameters
+        ----------
+        content : str
+            A string containing multiple XML-like <tool_call> entries, where each entry contains JSON data.
+
+        Returns
+        -------
+        list of dict
+            A list of dictionaries parsed from the JSON content inside each <tool_call> tag.
+        """
+        call_request_list = []
+
+        # Use regex to find matches between <tool_call> tags
+        for match in re.finditer(r"<tool_call>\n(.+)?\n</tool_call>", content):
+            try:
+                group_json = json.loads(match.group(1))
+                call_request_list.append(group_json)
+            except json.JSONDecodeError as e:
+                print(f"JSONDecodeError: {e}")
+                print(f"Failed to decode JSON: {match.group(1)}")
+                continue
+
+        return call_request_list

@@ -1,1 +1,1 @@
-from ._base import Function, Tool, ToolKit
+from ._base import Function, Tool, ToolKit, ToolCallProcessor
