@@ -394,7 +394,7 @@ def parse_tool_calls(content: str) -> List[Dict[str, Union[str, dict, int]]]:
     call_request_list = []
 
     # Use regex to find matches between <tool_call> tags
-    for match in re.finditer(r"<tool_call>\n(.+)?\n</tool_call>", content):
+    for match in re.finditer(r"<tool_calls>\n(.+)?\n</tool_calls>", content):
         try:
             group_json = json.loads(match.group(1))
             call_request_list.append(group_json)
