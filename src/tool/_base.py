@@ -3,13 +3,7 @@ import json
 import inspect
 from inspect import signature
 from pydantic import BaseModel, create_model
-from typing import List, Any, Callable, Union, Mapping
-
-
-from typing import Callable, Any, Mapping
-from pydantic import BaseModel, create_model
-import inspect
-from inspect import signature
+from typing import List, Any, Callable, Union, Mapping, Dict
 
 class Function(BaseModel):
     """
@@ -239,8 +233,7 @@ class Tool(Function):
         return f"Tool(name={self._name}, signature={self._signature}, doc={doc_preview})"
 
 
-from typing import Callable, Any, List, Union
-from pydantic import BaseModel
+
 
 class ToolKit(BaseModel):
     """
@@ -346,7 +339,7 @@ class ToolKit(BaseModel):
         Union[Tool, None]
             The `Tool` instance if found, otherwise `None`.
         """
-        return self._tools.get(name)
+        return self._tools.get(name, None)
 
     def __str__(self):
         """
@@ -384,36 +377,58 @@ class ToolCall(BaseModel):
     arguments: dict
     id: int
 
+def parse_tool_calls(content: str) -> List[Dict[str, Union[str, dict, int]]]:
+    """
+    Parses multiple <tool_call> entries from a string and returns a list of dictionaries.
+
+    Parameters
+    ----------
+    content : str
+        A string containing multiple XML-like <tool_call> entries, where each entry contains JSON data.
+
+    Returns
+    -------
+    List[Dict[str, Union[str, dict, int]]]
+        A list of dictionaries parsed from the JSON content inside each <tool_call> tag.
+    """
+    call_request_list = []
+
+    # Use regex to find matches between <tool_call> tags
+    for match in re.finditer(r"<tool_call>\n(.+)?\n</tool_call>", content):
+        try:
+            group_json = json.loads(match.group(1))
+            call_request_list.append(group_json)
+        except json.JSONDecodeError as e:
+            print(f"Failed to decode JSON: {e}, Content: {match.group(1)}")
+
+    return call_request_list
+
 class ToolCallProcessor:
     def __init__(self, message: str):
         self.message = message
-        self.call_json = self.parse_multiple_tool_calls(self.message)
-        self.tool_calls = [ToolCall(**call) for call in self.call_json]
+        self.calls = self.create_tool_calls(self.message)
 
-    def parse_multiple_tool_calls(self, content: str):
+    def create_tool_calls(self, content: str) -> List[ToolCall]:
         """
-        Parse multiple <tool_call> entries from a string and return a list of corresponding dictionaries.
+        Creates `ToolCall` instances from parsed tool calls in the content.
 
         Parameters
         ----------
         content : str
-            A string containing multiple XML-like <tool_call> entries, where each entry contains JSON data.
+            The message content to parse for tool calls.
 
         Returns
         -------
-        list of dict
-            A list of dictionaries parsed from the JSON content inside each <tool_call> tag.
+        List[ToolCall]
+            A list of `ToolCall` instances created from the parsed content.
         """
-        call_request_list = []
+        parsed_calls = parse_tool_calls(content)
+        tool_calls = []
 
-        # Use regex to find matches between <tool_call> tags
-        for match in re.finditer(r"<tool_call>\n(.+)?\n</tool_call>", content):
+        for call in parsed_calls:
             try:
-                group_json = json.loads(match.group(1))
-                call_request_list.append(group_json)
-            except json.JSONDecodeError as e:
-                print(f"JSONDecodeError: {e}")
-                print(f"Failed to decode JSON: {match.group(1)}")
-                continue
+                tool_calls.append(ToolCall(**call))
+            except TypeError as e:
+                print(f"TypeError: {e} for call: {call}")
 
-        return call_request_list
+        return tool_calls
