@@ -3,8 +3,7 @@ from typing import Any, Callable, List, Union
 
 from ollama._client import Client
 
-from src.tool import ToolCallProcessor, ToolKit
-
+from agentic.tool import ToolCallProcessor, ToolKit
 
 TOOL_PROMPT = """
 You are a function calling AI model.
@@ -20,6 +19,7 @@ For each function call to a listed function, return a JSON object with function 
 {"name": <function-name>, "arguments": <args-json-object>, "id": <monotonically-increasing-id>}
 </tool_call>
 """
+
 
 class ToolAgent:
     """

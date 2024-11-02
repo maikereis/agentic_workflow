@@ -2,7 +2,7 @@
 
 1. Install nvidia toolkit (assuming you do have an NVIDIA GPU)
     
-    `./install_nvidia_container_tookit.sh`
+    `./scripts/install_nvidia_container_tookit.sh`
     
 2. Start the containers
 

@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agentic_workflow"
+version = "0.1.0"
+description = "AI Agents"
+authors = [
+    { name="Maike Reis", email="maikerdralcantara@gmail.com" }
+]
+readme = "README.md"
+license = { text = "MIT" }
+requires-python = ">=3.6"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    # Add other dependencies here
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.isort]
+profile = "black"

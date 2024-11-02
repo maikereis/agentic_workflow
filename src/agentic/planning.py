@@ -1,11 +1,10 @@
-import re
 import json
+import re
 from typing import Any, Callable, List, Union
 
 from ollama._client import Client
 
-from src.tool import ToolCallProcessor, ToolKit
-
+from agentic.tool import ToolCallProcessor, ToolKit
 
 REACT_PROMPT = """
 You are a function calling AI model. You operate breaking a task given by a user's question into steps: <thought>, <tool_calls>, <tool_response>.
@@ -49,16 +48,17 @@ Then you can go to the next step with depends on first:
 <thought>It's friday, now i should show a message:</thought>
 <tool_calls>{\"name\": \"show_message\",\"arguments\": {\"message\": \"IT'S FRIDAY\"}, \"id\": 1}</tool_calls>
 
-Then you will be feeded with the result of the function call: 
+Then you will be feeded with the result of the function call:
 <tool_response>{\"success\": True}</tool_response>
 
 And if no more function calls are needed, you can respond with:
 <response>Today is friday! I showed a message remenbering you of this.</response>
 """
 
+
 class PlanningAgent:
     """
-    A class to manage the planning agent that interacts with a client and 
+    A class to manage the planning agent that interacts with a client and
     utilizes tools from a toolkit to respond to user messages.
 
     Parameters
@@ -94,7 +94,7 @@ class PlanningAgent:
     _initialize_system_message(system_message: str) -> str
         Initializes the system message using the provided template and tool schemas.
     start(message: str) -> str
-        Starts the interaction with the user by processing the input message 
+        Starts the interaction with the user by processing the input message
         and returning the final response from the assistant.
     """
 
@@ -105,7 +105,7 @@ class PlanningAgent:
         model: str = None,
         toolkit: Union[ToolKit, List[Callable[..., Any]]] = None,
         system_message: str = REACT_PROMPT,
-        max_iter = 20,
+        max_iter=20,
     ):
         """
         Initializes the PlanningAgent with the provided parameters.
@@ -165,22 +165,22 @@ class PlanningAgent:
     def _is_final_response(self, content, pattern=r"<response>(.*?)</response>"):
         """
         Check if the input string contains <response></response> tags.
-        
+
         Args:
             input_string (str): The string to check for <response> tags.
-        
+
         Returns:
             bool: True if the tags are found, False otherwise.
-        """    
+        """
         # Search for the pattern in the input string
         match = bool(re.search(pattern, content, re.DOTALL))
-        
+
         # Return True if the tags are found
         return match
 
     def start(self, message: str) -> str:
         """
-        Starts the interaction with the user by processing the input message 
+        Starts the interaction with the user by processing the input message
         and returning the final response from the assistant.
 
         Parameters
@@ -199,7 +199,9 @@ class PlanningAgent:
                 "content": self.system_message,
             }
         )
-        self.input_messages.append({"role": "user", "content": f"<question>{message}</question>"})
+        self.input_messages.append(
+            {"role": "user", "content": f"<question>{message}</question>"}
+        )
 
         final_response = None
 
@@ -215,11 +217,15 @@ class PlanningAgent:
 
             processor = ToolCallProcessor(response_content)
 
-            self.input_messages.append({"role": "assistant", "content": response_content})
+            self.input_messages.append(
+                {"role": "assistant", "content": response_content}
+            )
 
             for call in processor.calls:
                 try:
-                    result = self.toolkit.get_tool_by_name(call.name).run(call.arguments)
+                    result = self.toolkit.get_tool_by_name(call.name).run(
+                        call.arguments
+                    )
 
                     self.input_messages.append(
                         {
@@ -232,4 +238,3 @@ class PlanningAgent:
             i += 1
 
         return final_response
-
