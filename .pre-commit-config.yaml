@@ -1,0 +1,69 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+exclude: .md$
+repos:
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v4.6.0  # Use the ref you want to point at
+  hooks:
+  - id: trailing-whitespace
+    name: trim trailing whitespaces
+    description: trims trailing whitespace.
+    entry: trailing-whitespace-fixer
+    language: python
+    types: [text]
+    stages: [commit, push, manual]
+
+  - id: check-added-large-files
+    name: checking for added large files
+    description: prevents giant files from being committed.
+    entry: check-added-large-files
+    language: python
+
+  - id: check-merge-conflict
+    name: checking merge conflicts
+    description: checks for files that contain merge conflict strings.
+    entry: check-merge-conflict
+    language: python
+    types: [text]
+
+  - id: end-of-file-fixer
+    name: fix end of files
+    description: ensures that a file is either empty, or ends with one newline.
+    entry: end-of-file-fixer
+    language: python
+    types: [text]
+    stages: [commit, push, manual]
+
+  - id: name-tests-test
+    name: check-tests-name
+    description: ensures that the tests files have the correct nomeclature.
+    entry: name-tests-test --pytest-test-first
+    laguage: system
+    types: [python]
+
+  - id: isort
+    name: isort
+    entry: isort
+    stages: [commit, merge-commit, push, manual]
+    require_serial: true
+    language: python
+    types_or: [cython, pyi, python]
+    args: ['--filter-files']
+
+  - id: black
+    name: black
+    description: "Black: The uncompromising Python code formatter"
+    entry: black
+    language: python
+    require_serial: true
+    types_or: [python, pyi]
+
+  - id: black-jupyter
+    name: black-jupyter
+    description:
+      "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
+    entry: black
+    language: python
+    require_serial: true
+    types_or: [python, pyi, jupyter]
+    additional_dependencies: [".[jupyter]"]
