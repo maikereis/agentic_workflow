@@ -67,3 +67,11 @@ repos:
     require_serial: true
     types_or: [python, pyi, jupyter]
     additional_dependencies: [".[jupyter]"]
+
+  - id: pip-compile
+    name: pip-compile
+    description: Automatically compile requirements.
+    entry: pip-compile
+    language: python
+    files: ^requirements\.(in|txt)$
+    pass_filenames: false
