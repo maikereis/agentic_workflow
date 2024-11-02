@@ -1,4 +1,3 @@
-
 def summation(x: int, y: int = 0) -> int:
     """
     Add two integers.
@@ -16,7 +15,7 @@ def summation(x: int, y: int = 0) -> int:
         The sum of `x` and `y`.
     """
     return x + y
-    
+
 
 def multiplication(x: int, y: int) -> int:
     """

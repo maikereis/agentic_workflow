@@ -1,3 +1,5 @@
+isort
+black
 ollama
 notebook
 ipykernel

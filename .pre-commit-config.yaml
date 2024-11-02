@@ -1,6 +1,6 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
-exclude: .md$
+exclude: \.md$
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
   rev: v4.6.0  # Use the ref you want to point at
@@ -11,7 +11,7 @@ repos:
     entry: trailing-whitespace-fixer
     language: python
     types: [text]
-    stages: [commit, push, manual]
+    stages: [pre-commit, pre-push, manual]
 
   - id: check-added-large-files
     name: checking for added large files
@@ -32,24 +32,18 @@ repos:
     entry: end-of-file-fixer
     language: python
     types: [text]
-    stages: [commit, push, manual]
+    stages: [pre-commit, pre-push, manual]
 
   - id: name-tests-test
     name: check-tests-name
-    description: ensures that the tests files have the correct nomeclature.
+    description: ensures that the tests files have the correct nomenclature.
     entry: name-tests-test --pytest-test-first
-    laguage: system
+    language: system
     types: [python]
 
-  - id: isort
-    name: isort
-    entry: isort
-    stages: [commit, merge-commit, push, manual]
-    require_serial: true
-    language: python
-    types_or: [cython, pyi, python]
-    args: ['--filter-files']
-
+- repo: https://github.com/psf/black
+  rev: 24.10.0
+  hooks:
   - id: black
     name: black
     description: "Black: The uncompromising Python code formatter"
@@ -60,14 +54,28 @@ repos:
 
   - id: black-jupyter
     name: black-jupyter
-    description:
-      "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
+    description: "Black: The uncompromising Python code formatter (with Jupyter Notebook support)"
     entry: black
     language: python
     require_serial: true
     types_or: [python, pyi, jupyter]
     additional_dependencies: [".[jupyter]"]
 
+- repo: https://github.com/pycqa/isort
+  rev: 5.13.2
+  hooks:
+  - id: isort
+    name: isort
+    entry: isort
+    stages: [pre-commit, pre-merge-commit, pre-push, manual]
+    require_serial: true
+    language: python
+    types_or: [cython, pyi, python]
+    args: ['--filter-files']
+
+- repo: https://github.com/jazzband/pip-tools
+  rev: 7.4.0
+  hooks:
   - id: pip-compile
     name: pip-compile
     description: Automatically compile requirements.
